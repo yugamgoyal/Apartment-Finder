@@ -40,6 +40,7 @@ Onboarding:
 
 
 Resources:
+
     - redis: https://redis.io/docs/install/install-redis/install-redis-on-mac-os/ 
     - flask-mail: https://pythonhosted.org/Flask-Mail/
     - postman: https://www.postman.com/downloads/ (used for testing API)
