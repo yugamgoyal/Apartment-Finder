@@ -1,5 +1,3 @@
-Our Jira Board: https://apart-finder.atlassian.net/jira/software/projects/AF/boards/1 
-
 Onboarding: 
 
     Front-End: React Based
@@ -41,5 +39,9 @@ Onboarding:
         Should be able to run server.py and start testing endpoints
 
 
-
-
+Resources:
+    - redis: https://redis.io/docs/install/install-redis/install-redis-on-mac-os/ 
+    - flask-mail: https://pythonhosted.org/Flask-Mail/
+    - postman: https://www.postman.com/downloads/ (used for testing API)
+    - Jira Board: https://apart-finder.atlassian.net/jira/software/projects/AF/boards/1 
+    - Notion: https://www.notion.so/Nats-Yugam-39facbb2b8334943933f5680ce39cead?pvs=4 
