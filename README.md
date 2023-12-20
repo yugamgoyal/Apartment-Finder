@@ -46,3 +46,4 @@ Resources:
     - postman: https://www.postman.com/downloads/ (used for testing API)
     - Jira Board: https://apart-finder.atlassian.net/jira/software/projects/AF/boards/1 
     - Notion: https://www.notion.so/Nats-Yugam-39facbb2b8334943933f5680ce39cead?pvs=4 
+    - Figma: https://www.figma.com/file/07MeT7emtuXdafKkYDerE8/WAMPUSFinder?type=design&node-id=0-1&mode=design&t=0Sh6y17cy0kpJDhV-0
