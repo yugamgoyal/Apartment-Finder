@@ -2,12 +2,13 @@ from flask import Flask, request, jsonify, session
 from flask_bcrypt import Bcrypt
 from models import db, User, generate_verification_token
 from flask_session import Session
-from flask_mail import Mail, Message
+from flask_mail import Mail
 from config import ApplicationConfig
 from datetime import datetime
 from dotenv import load_dotenv
-import os 
 import re
+
+from common.user_util import UserUtil
 
 load_dotenv()
 app = Flask(__name__)
@@ -16,6 +17,8 @@ db.init_app(app)
 server_session = Session(app)
 bcrypt = Bcrypt(app)
 mail = Mail(app)
+
+user_util = UserUtil(app, mail, db)
 
 with app.app_context():
     db.create_all()
@@ -37,26 +40,11 @@ def signup_user():
     
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     new_user = User(first_name=first_name, last_name=last_name, email=email, password=hashed_password)
-    base_url = os.environ['BASE_URL']
-    sender = os.environ['MAIL_USERNAME']
-    link_for_verification = f"{base_url}/verify_account?verification_code={new_user.verify_token}"
-    msg = Message("Hello from UT Austin Apartment Locator - EMAIL VERIFICATION NEEDED",
-              sender = sender,
-              recipients=[new_user.email],
-              body=f"Hello from UT Austin Apartment Locator! We are happy you have chosen to join us.\n"
-                   f"One last step before you can join our family. Please click the link below to verify your account. "
-                   f"The link will expire in 24 hours.\n\n{link_for_verification}\n\nThank You,\nYugam & Nats")
-
-    try:
-        mail.send(msg)
-    except Exception as e:
-        return jsonify({'error': f'Failed to send verification email {e}'}), 500
+    
+    user_util.create_send_verification(new_user)        
 
     db.session.add(new_user)
     db.session.commit()
-    
-    # TODO: [AF-2] Should we keep this here, or should we just have sign-up as a non-cookie action
-    # session['id'] = new_user.id
     
     return jsonify({
         'id': new_user.id,
@@ -139,22 +127,9 @@ def verify_account():
         return jsonify({'message': 'Email verified successfully'}), 200
     else:
         user.verify_token = generate_verification_token(user.email)
-        base_url = os.environ['BASE_URL']
-        sender = os.environ['MAIL_USERNAME']
-        link_for_verification = f"{base_url}/verify_account?verification_code={user.verify_token}"
-        msg = Message("Hello from UT Austin Apartment Locator - EMAIL VERIFICATION NEEDED",
-                sender=sender,
-                recipients=[user.email],
-                body=f"Hello from UT Austin Apartment Locator! We are happy you have chosen to join us.\n"
-                    f"One last step before you can join our family. Please click the link below to verify your account. "
-                    f"The link will expire in 24 hours.\n\n{link_for_verification}\n\nThank You,\nYugam & Nats")
+        user_util.create_send_verification(user)        
         
         db.session.commit()
-        
-        try:
-            mail.send(msg)
-        except Exception as e:
-            return jsonify({'error': 'Failed to send verification email'}), 500
 
         return jsonify({'error': 'Expired token'}), 400
 
