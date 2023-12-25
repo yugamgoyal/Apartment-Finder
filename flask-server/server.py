@@ -1,11 +1,11 @@
 from flask import Flask, request, jsonify, session
 from flask_bcrypt import Bcrypt
-from models import db, User, generate_verification_token
+from models import db, User
 from flask_session import Session
 from flask_mail import Mail
 from config import ApplicationConfig
-from datetime import datetime
 from dotenv import load_dotenv
+from datetime import datetime
 import re
 
 from common.user_util import UserUtil
@@ -40,11 +40,10 @@ def signup_user():
     
     hashed_password = bcrypt.generate_password_hash(password).decode('utf-8')
     new_user = User(first_name=first_name, last_name=last_name, email=email, password=hashed_password)
-    
-    user_util.create_send_verification(new_user)        
-
     db.session.add(new_user)
     db.session.commit()
+    
+    user_util.create_send_verification(new_user)        
     
     return jsonify({
         'id': new_user.id,
@@ -66,7 +65,7 @@ def login_user():
     if not bcrypt.check_password_hash(user.password, password):
         return jsonify({'error': "Unauthorized: password incorrect"}), 401
     
-    if not user.verified:
+    if not user_util.isVerified(user):
         return jsonify({'error': "Unauthorized: account not verified"}), 401
 
     session["id"] = user.id
@@ -121,16 +120,11 @@ def verify_account():
         return jsonify({'error': 'Invalid Token'}), 400
     
     if datetime.now() < user.expiration_date:
-        user.verified = True
-        db.session.commit()
+        user_util.verified(user)
         session['id'] = user.id
         return jsonify({'message': 'Email verified successfully'}), 200
     else:
-        user.verify_token = generate_verification_token(user.email)
-        user_util.create_send_verification(user)        
-        
-        db.session.commit()
-
+        user_util.create_send_verification(user)
         return jsonify({'error': 'Expired token'}), 400
 
 if __name__ == '__main__':

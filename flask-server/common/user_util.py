@@ -1,6 +1,8 @@
 import os
 from flask_mail import Message
 from dotenv import load_dotenv
+from datetime import datetime, timedelta
+from models import generate_verification_token
 
 load_dotenv()
 
@@ -11,6 +13,12 @@ class UserUtil:
         self.db = db
 
     def create_send_verification(self, user):
+        
+        if datetime.now() > user.expiration_date:
+            user.verify_token = generate_verification_token(user.email)
+            user.expiration_date = datetime.utcnow() + timedelta(hours=24)
+            self.db.session.commit()
+        
         base_url = os.environ.get('BASE_URL')
         sender = os.environ.get('MAIL_USERNAME')
 
@@ -35,3 +43,10 @@ class UserUtil:
             return {'message': 'Verification email sent successfully'}, 200
         except Exception as e:
             return {'error': f'Failed to send verification email. Error: {str(e)}'}, 500
+    
+    def verified(self, user):
+        user.verified = True
+        self.db.session.commit()
+        
+    def isVerified(self, user):
+        return user.verified
