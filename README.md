@@ -8,8 +8,8 @@ Onboarding:
         - Flask Setup:
             - cd flask-server
             - pip3 install virtualenv
-            - python3 -m venv myenv
-            - source myenv/bin/activate
+            - python3 -m venv venv
+            - source venv/bin/activate
             - pip3 install -r requirements.txt
 
         - Redis Setup:
